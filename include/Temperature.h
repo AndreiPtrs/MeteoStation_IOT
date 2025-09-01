@@ -1,4 +1,4 @@
-#pragma once Temperature.cpp
+#pragma once
  
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
