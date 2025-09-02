@@ -6,6 +6,8 @@
 
 #include "Temperature.h"
 #include "Humidity.h"
+#include "Altitude.h"
+#include "Pressure.h"
 
 // === TFT pins (adjust for your wiring) ===
 #define TFT_CS 5
@@ -22,8 +24,8 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 Adafruit_BME280 bme;
 
 // === timing variables (easy to change) ===
-unsigned long sensorInterval = 12000;  // sensor read every 5 seconds
-unsigned long pageInterval = 3000;     // page changes every 2 seconds
+unsigned long sensorInterval = 12000; // sensor read every 5 seconds
+unsigned long pageInterval = 3000;    // page changes every 2 seconds
 
 unsigned long lastSensorRead = 0;
 unsigned long lastPageChange = 0;
@@ -34,11 +36,13 @@ float temperature, pressure, humidity, altitude;
 // current page
 int page = 0;
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   Serial.println("\n=== ESP32 + BME280 Init ===");
 
-  if (!bme.begin(0x76) && !bme.begin(0x77)) {
+  if (!bme.begin(0x76) && !bme.begin(0x77))
+  {
     Serial.println("BME280 not found!");
     while (1)
       ;
@@ -48,7 +52,7 @@ void setup() {
 
   // TFT init
   tft.begin();
-  tft.setRotation(1);  // landscape
+  tft.setRotation(1); // landscape
   tft.fillScreen(ILI9341_BLACK);
   tft.setTextSize(3);
   tft.setTextColor(ILI9341_WHITE);
@@ -57,11 +61,13 @@ void setup() {
 }
 void showPage(int pag);
 
-void loop() {
+void loop()
+{
   unsigned long now = millis();
 
   // === read sensor data on interval ===
-  if (now - lastSensorRead >= sensorInterval) {
+  if (now - lastSensorRead >= sensorInterval)
+  {
     lastSensorRead = now;
 
     temperature = bme.readTemperature();
@@ -81,58 +87,33 @@ void loop() {
   }
 
   // === change page on interval ===
-  if (now - lastPageChange >= pageInterval) {
+  if (now - lastPageChange >= pageInterval)
+  {
     lastPageChange = now;
     showPage(page);
     page = (page + 1) % 4;
   }
 }
 
-void showPage(int pag) {
+void showPage(int pag)
+{
   tft.fillScreen(ILI9341_BLACK);
 
-  switch (pag) {
-    case 0:  // 🌡️ Temp erature
-      Temperature(temperature);
-      break;
+  switch (pag)
+  {
+  case 0: // 🌡️ Temp erature
+    Temperature(temperature);
+    break;
 
-    case 1:  // 💧 Humidity
-      Humidity(humidity);
-      break;
+  case 1: // 💧 Humidity
+    Humidity(humidity);
+    break;
 
-    case 2:  // ⬇️ Pressure
-      tft.fillScreen(ILI9341_GREEN);
-      tft.setCursor(60, 20);
-      tft.setTextSize(3);
-      tft.setTextColor(ILI9341_BLACK);
-      tft.println("Pressure");
-
-      tft.drawCircle(80, 140, 50, ILI9341_BLACK);
-      tft.drawLine(80, 140, 120, 100, ILI9341_BLACK);
-
-      tft.setCursor(140, 120);
-      tft.setTextSize(3);
-      tft.setTextColor(ILI9341_WHITE);
-      tft.printf("%.2f hPa", pressure);
-      break;
-
-    case 3:  // 🏔️ Altitude
-      tft.fillScreen(ILI9341_YELLOW);
-      tft.setCursor(75, 20);
-      tft.setTextSize(3);
-      tft.setTextColor(ILI9341_BLACK);
-      tft.println("Altitude");
-
-      tft.fillTriangle(40, 200, 100, 80, 160, 200, ILI9341_BROWN);
-      tft.fillTriangle(120, 200, 200, 100, 280, 200, ILI9341_DARKGREY);
-
-      tft.fillTriangle(90, 110, 100, 80, 110, 110, ILI9341_WHITE);
-      tft.fillTriangle(180, 120, 200, 100, 220, 120, ILI9341_WHITE);
-
-      tft.setCursor(60, 220);
-      tft.setTextSize(3);
-      tft.setTextColor(ILI9341_BLACK);
-      tft.printf("%.2f m", altitude);
-      break;
+  case 2: // ⬇️ Pressure
+    Pressure(pressure);
+    break;
+  case 3: // 🏔️ Altitude
+    Altitude(altitude);
+    break;
   }
 }

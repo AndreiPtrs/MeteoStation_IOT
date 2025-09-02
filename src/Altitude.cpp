@@ -1,20 +1,16 @@
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 
-#define TFT_CS 5
-#define TFT_DC 27
-#define TFT_RST 45
+extern Adafruit_ILI9341 tft;
 
-#define ILI9341_LIGHTBLUE 0x3B1F
 #define ILI9341_BROWN 0x7800
+#define ILI9341_DARKGREY 0x7BEF
 
-Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
-float altitude = 2000;
-void setup()
-{
-  tft.begin();
-  tft.setRotation(1); // landscape
-  tft.fillScreen(ILI9341_WHITE);
+void Altitude(float altitude){
+    tft.fillScreen(ILI9341_WHITE);
   tft.setCursor(75, 20);
   tft.setTextSize(3);
   tft.setTextColor(ILI9341_BLACK);
@@ -32,14 +28,8 @@ void setup()
   tft.fillRect(102, 55, 7, 30, ILI9341_BLACK);
 
 
-
   tft.setCursor(150, 120);
   tft.setTextSize(4);
   tft.setTextColor(ILI9341_BLACK);
   tft.printf("%.fm", altitude);
-}
-
-void loop()
-{
-  // nimic
 }
