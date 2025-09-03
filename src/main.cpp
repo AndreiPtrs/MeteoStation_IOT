@@ -6,7 +6,7 @@
 
 #include "Temperature.h"
 #include "Humidity.h"
-
+#include "buzz.h"
 // === TFT pins (adjust for your wiring) ===
 #define TFT_CS 5
 #define TFT_DC 27
@@ -86,6 +86,7 @@ void loop() {
     showPage(page);
     page = (page + 1) % 4;
   }
+  //  buzz();
 }
 
 void showPage(int pag) {
