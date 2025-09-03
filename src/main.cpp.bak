@@ -8,6 +8,7 @@
 #include "Humidity.h"
 #include "Altitude.h"
 #include "Pressure.h"
+#include "Connect.h"
 
 // === TFT pins (adjust for your wiring) ===
 #define TFT_CS 5
@@ -39,6 +40,8 @@ int page = 0;
 void setup()
 {
   Serial.begin(115200);
+  delay(1000);
+  SetupWIFI();
   Serial.println("\n=== ESP32 + BME280 Init ===");
 
   if (!bme.begin(0x76) && !bme.begin(0x77))
