@@ -1,8 +1,4 @@
-#include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_ILI9341.h>
+#include "Humidity.h"
 
 extern Adafruit_ILI9341 tft;
 #define ILI9341_LIGHTBLUE 0x3B1F
