@@ -1,5 +1,3 @@
-#include <WiFi.h>
-
 #include "Connect.h"
 
 #define TFT_CS 5
@@ -9,19 +7,40 @@
 #define ILI9341_LIGHTBLUE 0x3B1F
 #define ILI9341_BROWN 0x7800
 
-
-
 void setup()
 {
   delay(1000);
   Serial.begin(115200);
   SetupWIFI();
   SetupTime();
+
   Serial.println();
   Serial.print(FormatTime());
+  Serial.println();
+
+  setupMQTT();
+  connectMQTT();
 }
+
+const char *TENANT = "delta";
+const char *APP = "mountain";
+const char *DEVICE = "esp32-delta";
+
+String topic = String("tenants/") + TENANT + "/" + APP + "/" + DEVICE + "/temp";
 
 void loop()
 {
-  // nimic
+  if (!mqtt.connected())
+    connectMQTT();
+
+  mqtt.loop();
+
+  sendData(mqtt, topic.c_str(), "temperature", 24.5, "C");
+  delay(5000);
+  sendData(mqtt, topic.c_str(), "humidity", 60.5, "%");
+  delay(5000);
+  sendData(mqtt, topic.c_str(), "pressure", 1013.25, "hPa");
+  delay(5000);
+  sendData(mqtt, topic.c_str(), "altitude", 2544.45, "m");
+  delay(5000);
 }

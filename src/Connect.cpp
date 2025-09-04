@@ -46,3 +46,49 @@ String FormatTime()
     strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
     return String(buf);
 }
+
+const char* MQTT_HOST = "mqtt.aiot-xplorer.eu"; // Ip broker
+const uint16_t MQTT_PORT = 1883;
+
+WiFiClient espClient; 
+PubSubClient mqtt(espClient);
+
+
+void setupMQTT()
+{
+    mqtt.setServer(MQTT_HOST, MQTT_PORT);
+}
+
+void connectMQTT()
+{
+    while (!mqtt.connected())
+    {
+        Serial.print("Connecting to MQTT...");
+        if (mqtt.connect("esp32-client"))
+        {
+            Serial.println();
+            Serial.println("connected");
+        }
+        else
+        {
+            Serial.print(".");
+            delay(1000);
+        }
+    }
+}
+
+void sendData(PubSubClient &mqttClient, const char* topic, const char* sensor, float value, const char* unit)
+{
+  StaticJsonDocument<200> doc;
+  doc["ts"] = FormatTime();
+  doc["value"] = value;
+  doc["unit"] = unit;
+  doc["sensor"] = sensor;
+char buffer[200];
+  size_t n = serializeJson(doc, buffer);
+
+mqttClient.publish(topic, buffer, n);
+
+  Serial.printf("Published to %s: %s\n", topic, buffer);
+
+}
