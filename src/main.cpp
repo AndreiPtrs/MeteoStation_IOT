@@ -43,15 +43,15 @@ void setup()
 {
   Serial.begin(115200);
   delay(1000);
-  SetupWIFI();// connect to WiFi
-  SetupTime();
+  // SetupWIFI();// connect to WiFi
+  // SetupTime();
 
-  Serial.println();
-  Serial.print(FormatTime());
-  Serial.println();
+  // Serial.println();
+  // Serial.print(FormatTime());
+  // Serial.println();
 
-  setupMQTT(); // setup MQTT
-  connectMQTT();
+  // setupMQTT(); // setup MQTT
+  // connectMQTT();
   
   Serial.println("\n=== ESP32 + BME280 Init ===");
 
@@ -68,9 +68,9 @@ void setup()
   tft.begin();
   tft.setRotation(1); // landscape
   tft.fillScreen(ILI9341_BLACK);
-  tft.setTextSize(3);
+  tft.setTextSize(5);
   tft.setTextColor(ILI9341_WHITE);
-  tft.setCursor(20, 20);
+  tft.setCursor(50, 120);
   tft.println("BME280 Ready...");
 }
 
