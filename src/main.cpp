@@ -37,11 +37,22 @@ float temperature, pressure, humidity, altitude;
 // current page
 int page = 0;
 
+void showPage(int pag);
+
 void setup()
 {
   Serial.begin(115200);
   delay(1000);
-  SetupWIFI();
+  // SetupWIFI();// connect to WiFi
+  // SetupTime();
+
+  // Serial.println();
+  // Serial.print(FormatTime());
+  // Serial.println();
+
+  // setupMQTT(); // setup MQTT
+  // connectMQTT();
+  
   Serial.println("\n=== ESP32 + BME280 Init ===");
 
   if (!bme.begin(0x76) && !bme.begin(0x77))
@@ -57,12 +68,12 @@ void setup()
   tft.begin();
   tft.setRotation(1); // landscape
   tft.fillScreen(ILI9341_BLACK);
-  tft.setTextSize(3);
+  tft.setTextSize(5);
   tft.setTextColor(ILI9341_WHITE);
-  tft.setCursor(20, 20);
+  tft.setCursor(50, 120);
   tft.println("BME280 Ready...");
 }
-void showPage(int pag);
+
 
 void loop()
 {
@@ -88,6 +99,7 @@ void loop()
     Serial.printf(" 🏔️  Altitude    : %.2f m\n", altitude);
     Serial.println("===================================\n");
   }
+  
 
   // === change page on interval ===
   if (now - lastPageChange >= pageInterval)
