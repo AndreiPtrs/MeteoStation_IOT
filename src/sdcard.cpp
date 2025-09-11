@@ -11,7 +11,7 @@ extern Adafruit_ILI9341 tft;
 // Define SPI and SD card pins if not already defined
 #define SD_CS 17 // Change this to your SD card CS pin
 
-Adafruit_BME280 bme; // Global BME280 sensor object
+extern Adafruit_BME280 bme; // Global BME280 sensor object
 
 void initializeSDCard()
 {

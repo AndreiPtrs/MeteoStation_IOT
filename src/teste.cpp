@@ -1,6 +1,10 @@
 #include "sdcard.h"
-#include "Altitude.h"
 #include"buzz.h"
+#include"bme280.h"
+#include "Altitude.h"
+#include "Pressure.h"
+#include "temperature.h"
+#include"Humidity.h"
 
 #define TFT_CS 5
 #define TFT_DC 27
@@ -17,14 +21,46 @@ void setup()
   initializeSDCard();
   tft.begin();
   tft.setRotation(1); // landscape
+  
 }
 
 void loop()
 {
-  Altitude(500.0);
-  delay (2000); // altitudine de referinta in metri
-  scriere_sd();
-  delay(2000); // log la fiecare 2 secunde
-  citire_sd();
-  delay(2000);
+  static unsigned long lastBme = 0;
+  static unsigned long lastTemp = 0;
+  static unsigned long lastHum = 0;
+  static unsigned long lastPres = 0;
+  static float temperatura = 0, presiune = 0, umiditate = 0;
+
+  unsigned long now = millis();
+
+  // Măsurare BME280 la fiecare 15 secunde
+  if (now - lastBme >= 15000 || lastBme == 0) {
+    bme_masurare(temperatura, presiune, umiditate);
+    scriere_sd();
+    lastBme = now;
+  }
+
+  // Temperature la fiecare 2 secunde
+  if (now - lastTemp >= 2000 || lastTemp == 0) {
+    Temperature(temperatura);
+    lastTemp = now;
+  }
+
+  // Humidity la fiecare 4 secunde (2 secunde după Temperature)
+  if (now - lastHum >= 4000 || lastHum == 0) {
+    Humidity(umiditate);
+    lastHum = now;
+  }
+
+  // Pressure la fiecare 6 secunde (2 secunde după Humidity)
+  if (now - lastPres >= 6000 || lastPres == 0) {
+    Pressure(presiune);
+    lastPres = now;
+  }
+
+  // Citire SD la fiecare 15 secunde (după măsurare)
+  if (now - lastBme < 50) { // imediat după măsurare
+    citire_sd();
+  }
 }
