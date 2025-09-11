@@ -4,6 +4,8 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_ILI9341.h>
+#include <vector>
+#include <string>
 
 extern Adafruit_ILI9341 tft;
 // Define SPI and SD card pins if not already defined
@@ -65,4 +67,65 @@ void scriere_sd()
     Serial.println("Nu pot scrie pe card!");
   }
 
+}
+
+void citire_sd()
+{
+    File dataFile = SD.open("/bme280_log.csv", FILE_READ);
+    if (!dataFile) {
+        Serial.println("Nu pot citi de pe card!");
+        return;
+    }
+
+    std::vector<float> temperaturi;
+    std::vector<float> presiuni;
+    std::vector<String> lines;
+
+    while (dataFile.available()) {
+        String line = dataFile.readStringUntil('\n');
+        if (line.length() > 0) {
+            lines.push_back(line);
+        }
+    }
+    dataFile.close();
+
+    int start = lines.size() > 24 ? lines.size() - 24 : 0;
+    Serial.println("Temperaturi si presiuni ultimele 24 inregistrari:");
+    float tempMin = 1000, tempMax = -1000;
+
+    for (int i = start; i < lines.size(); i++) {
+        // Ignoră header-ul
+        if (lines[i].startsWith("Timp")) continue;
+
+        int firstComma = lines[i].indexOf(',');
+        int secondComma = lines[i].indexOf(',', firstComma + 1);
+        int thirdComma = lines[i].indexOf(',', secondComma + 1);
+
+        if (firstComma > 0 && secondComma > firstComma && thirdComma > secondComma) {
+            String tempStr = lines[i].substring(firstComma + 1, secondComma);
+            String presStr = lines[i].substring(secondComma + 1, thirdComma);
+
+            float temp = tempStr.toFloat();
+            float pres = presStr.toFloat();
+
+            temperaturi.push_back(temp);
+            presiuni.push_back(pres);
+
+            Serial.print("T=");
+            Serial.print(temp);
+            Serial.print(" *C, P=");
+            Serial.print(pres);
+            Serial.println(" hPa");
+
+            if (temp < tempMin) tempMin = temp;
+            if (temp > tempMax) tempMax = temp;
+        }
+    }
+
+    Serial.print("Temperatura minima: ");
+    Serial.print(tempMin);
+    Serial.println(" *C");
+    Serial.print("Temperatura maxima: ");
+    Serial.print(tempMax);
+    Serial.println(" *C");
 }
