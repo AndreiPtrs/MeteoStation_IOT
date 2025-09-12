@@ -15,6 +15,9 @@
 #define TFT_DC 27
 #define TFT_RST 45
 
+// === Button pin ===
+#define BUTTON_PIN 13
+
 // extra colors
 #define ILI9341_BROWN 0xA145
 #define ILI9341_DARKGREY 0x7BEF
@@ -52,6 +55,8 @@ void setup()
 
   // setupMQTT(); // setup MQTT
   // connectMQTT();
+
+  pinMode(BUTTON_PIN, INPUT);
   
   Serial.println("\n=== ESP32 + BME280 Init ===");
 
@@ -98,13 +103,22 @@ void loop()
     Serial.printf(" ⬇️  Pressure    : %.2f hPa\n", pressure);
     Serial.printf(" 🏔️  Altitude    : %.2f m\n", altitude);
     Serial.println("===================================\n");
+
+    showPage(page);
   }
   
 
   // === change page on interval ===
-  if (now - lastPageChange >= pageInterval)
-  {
-    lastPageChange = now;
+  // if (now - lastPageChange >= pageInterval)
+  // {
+  //   lastPageChange = now;
+  //   showPage(page);
+  //   page = (page + 1) % 4;
+  // }
+
+  //change page on button press
+  if(digitalRead(BUTTON_PIN) == 1){
+    delay(200);
     showPage(page);
     page = (page + 1) % 4;
   }

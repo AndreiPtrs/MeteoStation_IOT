@@ -1,18 +1,22 @@
-#include "Altitude.h"
-#include "Humidity.h"
-#include "Pressure.h"
-#include "Temperature.h"
+#include <Arduino.h>
 
-#define TFT_CS 5
-#define TFT_DC 27
-#define TFT_RST 45
+#define BUTTON_PIN 13
 
-Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
-
-void setup(){
-    tft.begin();
-    tft.setRotation(1);
-    Pressure(1013.25);
+void setup()
+{
+  Serial.begin(115200);
+  pinMode(BUTTON_PIN, INPUT);
 }
 
-void loop(){}
+void loop()
+{
+  byte buttonState = digitalRead(BUTTON_PIN);
+  
+  if (buttonState == 1) {
+      Serial.println("Button is pressed");
+  }
+  else {
+      Serial.println("Button is not pressed");
+  }
+  delay(100);
+}
