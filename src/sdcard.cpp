@@ -33,10 +33,10 @@ void initializeSDCard()
     }
 
     // Initialize BME280 sensor
-    if (!bme.begin(0x76) && !bme.begin(0x77)) { // Default I2C address is 0x76 or 0x77
-        Serial.println("Nu s-a detectat senzorul BME280!");
-        while (1);
-    }
+    // if (!bme.begin(0x76) && !bme.begin(0x77)) { // Default I2C address is 0x76 or 0x77
+    //     Serial.println("Nu s-a detectat senzorul BME280!");
+    //     while (1);
+    // }
 }
 
 void scriere_sd()

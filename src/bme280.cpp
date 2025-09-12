@@ -1,18 +1,21 @@
-#include <Adafruit_BME280.h>
-#include <Wire.h>
-#include <SPI.h>
-#include <SD.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_ILI9341.h>
+#include "bme280.h"
 
-#define BME_SDA 21
-#define BME_SCL 22
-#define SEALEVELPRESSURE_HPA (1013.25)
 
-Adafruit_BME280 bme;
+void bme_init()
+{
+    Wire.begin(BME_SDA, BME_SCL);
+    if (!bme.begin(0x76) && !bme.begin(0x77))
+    {
+        Serial.println("BME280 sensor not detected!");
+        while (1);
+    }
+    Serial.println("BME280 sensor detected successfully!");
+}
 
-void bme_masurare(float &temperatura, float &presiune, float &umiditate) {
-    temperatura = bme.readTemperature();
-    presiune = bme.readPressure() / 100.0F;
-    umiditate = bme.readHumidity();
+void bme_measure(float &temperature, float &pressure, float &humidity, float &altitude)
+{
+    temperature = bme.readTemperature();
+    pressure = bme.readPressure() / 100.0F;
+    humidity = bme.readHumidity();
+    altitude = bme.readAltitude(SEALEVELPRESSURE_HPA);
 }
