@@ -5,8 +5,13 @@
 #include <Adafruit_BME280.h>
 #include <Adafruit_ILI9341.h>
 
-extern Adafruit_ILI9341 tft;
+#define BME_SDA 21
+#define BME_SCL 22
+#define SEALEVELPRESSURE_HPA (1013.25)
 
-void bme_masurare(float &temperatura, float &presiune, float &umiditate);
+extern Adafruit_BME280 bme;
+
+void bme_init();
+void bme_measure(float &temperature, float &pressure, float &humidity, float &altitude);
     
 

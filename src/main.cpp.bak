@@ -10,27 +10,30 @@
 #include "Altitude.h"
 #include "Pressure.h"
 #include "Connect.h"
+#include "sdcard.h"
+#include"buzz.h"
+#include"bme280.h"
+
 
 // === TFT pins (adjust for your wiring) ===
 #define TFT_CS 5
 #define TFT_DC 27
-#define TFT_RST 45
+#define TFT_RST 14
+#define SD_CS 17
 
-// extra colors
-#define ILI9341_BROWN 0xA145
-#define ILI9341_DARKGREY 0x7BEF
+Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST); // TFT instance
+Adafruit_BME280 bme; // BME280 sensor
 
-Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 
-// BME280 sensor
-Adafruit_BME280 bme;
+// === Button pin ===
+#define BUTTON_PIN 13
+
 
 // === timing variables (easy to change) ===
-unsigned long sensorInterval = 12000; // sensor read every 5 seconds
-unsigned long pageInterval = 3000;    // page changes every 2 seconds
+unsigned long sensorInterval = 15000; // sensor read every 15 seconds
 
 unsigned long lastSensorRead = 0;
-unsigned long lastPageChange = 0;
+
 
 // sensor data
 float temperature, pressure, humidity, altitude;
@@ -53,6 +56,8 @@ void setup()
 
   // setupMQTT(); // setup MQTT
   // connectMQTT();
+
+  pinMode(BUTTON_PIN, INPUT);
   
   Serial.println("\n=== ESP32 + BME280 Init ===");
 
@@ -99,13 +104,22 @@ void loop()
     Serial.printf(" ⬇️  Pressure    : %.2f hPa\n", pressure);
     Serial.printf(" 🏔️  Altitude    : %.2f m\n", altitude);
     Serial.println("===================================\n");
+
+    showPage(page);
   }
   
 
   // === change page on interval ===
-  if (now - lastPageChange >= pageInterval)
-  {
-    lastPageChange = now;
+  // if (now - lastPageChange >= pageInterval)
+  // {
+  //   lastPageChange = now;
+  //   showPage(page);
+  //   page = (page + 1) % 4;
+  // }
+
+  //change page on button press
+  if(digitalRead(BUTTON_PIN) == 1){
+    delay(200);
     showPage(page);
     page = (page + 1) % 4;
   }
