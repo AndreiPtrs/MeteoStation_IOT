@@ -32,7 +32,7 @@ int page = 0;
 
 // debounce variables
 unsigned long lastButtonPress = 0;
-const unsigned long debounceDelay = 200; // ms
+const unsigned long debounceDelay = 20; // ms
 
 bool backlightOn = true;
 unsigned long buttonPressStart = 0;
@@ -47,6 +47,7 @@ void toggleBacklight() {
 
 void setup()
 {
+  initializeSDCard();
   Serial.begin(115200);
   delay(1000);
   pinMode(BUTTON_PIN, INPUT);
@@ -61,50 +62,59 @@ void setup()
 
 void loop()
 {
-  unsigned long now = millis();
+    unsigned long now = millis();
+    static bool buttonPrevState = LOW;
+    static bool backlightToggled = false;
 
-  // === detectare apăsare lungă pentru backlight ON/OFF ===
-  if (digitalRead(BUTTON_PIN) == HIGH) {
-      if (buttonPressStart == 0) buttonPressStart = now;
-      if ((now - buttonPressStart) > 3000) { // 3 secunde
-          toggleBacklight();
-          while (digitalRead(BUTTON_PIN) == HIGH) delay(10); // așteaptă eliberarea butonului
-          buttonPressStart = 0;
-          lastButtonPress = now;
-          return; // evită schimbarea paginii accidental
-      }
-  } else {
-      buttonPressStart = 0;
-  }
+    bool buttonState = digitalRead(BUTTON_PIN);
 
-  // === read sensor data on interval ===
-  if (now - lastSensorRead >= sensorInterval)
-  {
-    lastSensorRead = now;
-    bme_measure(temperature, pressure, humidity, altitude);
+    // Detectare apăsare lungă pentru backlight ON/OFF
+    if (buttonState == HIGH && buttonPrevState == LOW) {
+        buttonPressStart = now; // început apăsare
+        backlightToggled = false;
+    }
 
-    Serial.println("===================================");
-    Serial.println(" 🌍  BME280 Sensor Data");
-    Serial.println("===================================");
-    Serial.printf(" 🌡️  Temperature : %.2f °C\n", temperature);
-    Serial.printf(" 💧  Humidity    : %.2f %%\n", humidity);
-    Serial.printf(" ⬇️  Pressure    : %.2f hPa\n", pressure);
-    Serial.printf(" 🏔️  Altitude    : %.2f m\n", altitude);
-    Serial.println("===================================\n");
+    if (buttonState == HIGH && !backlightToggled) {
+        if ((now - buttonPressStart) > 1500) { // 1.5 secunde pentru backlight
+            toggleBacklight();
+            backlightToggled = true;
+            // așteaptă eliberarea butonului pentru a evita schimbarea paginii accidental
+        }
+    }
 
-    // Actualizează pagina curentă cu datele noi
-    showPage(page);
-  }
+    // Detectare apăsare scurtă pentru schimbare pagină
+    if (buttonState == LOW && buttonPrevState == HIGH) {
+        if (!backlightToggled && (now - buttonPressStart) > debounceDelay && (now - buttonPressStart) < 1000) {
+            // Apăsare scurtă: schimbă pagina
+            page = (page + 1) % 4;
+            showPage(page);
+            Serial.printf("Pagina schimbata: %d\n", page);
+        }
+        buttonPressStart = 0;
+        backlightToggled = false;
+    }
 
-  // === schimbă pagina la apăsarea butonului ===
-  if (digitalRead(BUTTON_PIN) == HIGH && (now - lastButtonPress > debounceDelay) && buttonPressStart == 0)
-  {
-    lastButtonPress = now;
-    page = (page + 1) % 4;
-    showPage(page); // afișează noua pagină imediat
-    Serial.printf("Pagina schimbata: %d\n", page);
-  }
-  // buzz();
+    buttonPrevState = buttonState;
+
+    // === read sensor data on interval ===
+    if (now - lastSensorRead >= sensorInterval)
+    {
+        lastSensorRead = now;
+        bme_measure(temperature, pressure, humidity, altitude);
+        scriere_sd(temperature, pressure, humidity);
+
+        Serial.println("===================================");
+        Serial.println(" 🌍  BME280 Sensor Data");
+        Serial.println("===================================");
+        Serial.printf(" 🌡️  Temperature : %.2f °C\n", temperature);
+        Serial.printf(" 💧  Humidity    : %.2f %%\n", humidity);
+        Serial.printf(" ⬇️  Pressure    : %.2f hPa\n", pressure);
+        Serial.printf(" 🏔️  Altitude    : %.2f m\n", altitude);
+        Serial.println("===================================\n");
+
+        showPage(page);
+        citire_sd();
+    }
 }
 
 void showPage(int pag)

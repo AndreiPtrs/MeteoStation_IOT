@@ -39,29 +39,27 @@ void initializeSDCard()
     // }
 }
 
-void scriere_sd()
+void scriere_sd(float &temperature, float &pressure, float &humidity)
 {
-    float temperatura = bme.readTemperature();
-  float presiune = bme.readPressure() / 100.0F;
-  float umiditate = bme.readHumidity();
+
 
   Serial.print("T=");
-  Serial.print(temperatura);
+  Serial.print(temperature);
   Serial.print(" *C, P=");
-  Serial.print(presiune);
+  Serial.print(pressure);
   Serial.print(" hPa, H=");
-  Serial.print(umiditate);
+  Serial.print(humidity);
   Serial.println(" %");
 
   File dataFile = SD.open("/bme280_log.csv", FILE_APPEND);
   if (dataFile) {
     dataFile.print(millis());
     dataFile.print(",");
-    dataFile.print(temperatura);
+    dataFile.print(temperature);
     dataFile.print(",");
-    dataFile.print(presiune);
+    dataFile.print(pressure);
     dataFile.print(",");
-    dataFile.println(umiditate);
+    dataFile.println(humidity);
     dataFile.close();
   } else {
     Serial.println("Nu pot scrie pe card!");

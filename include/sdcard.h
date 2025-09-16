@@ -7,8 +7,6 @@
 
 extern Adafruit_ILI9341 tft;
 
-void scriere_sd();
-
-void citire_sd();
+void scriere_sd(float &temperature, float &pressure, float &humidity);
 void citire_sd();
 void initializeSDCard();
