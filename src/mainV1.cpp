@@ -12,7 +12,8 @@
 // === TFT pins (adjust for your wiring) ===
 #define TFT_CS 5
 #define TFT_DC 27
-#define TFT_RST 14
+#define TFT_RST 25
+#define TFT_CLK 18
 #define SD_CS 17
 #define TFT_BL 33 // Pin for TFT backlight control
 
@@ -32,7 +33,7 @@ int page = 0;
 
 // debounce variables
 unsigned long lastButtonPress = 0;
-const unsigned long debounceDelay = 20; // ms
+const unsigned long debounceDelay = 200; // ms
 
 bool backlightOn = true;
 unsigned long buttonPressStart = 0;

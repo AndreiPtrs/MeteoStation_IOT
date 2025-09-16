@@ -11,12 +11,21 @@
 #define TFT_RST 14
 #define SD_CS 17
 
+// // === TFT pins (adjust for your wiring) ===
+// #define TFT_CS 5
+// #define TFT_DC 16
+// #define TFT_RST 17
+// #define TFT_CLK 18
+// #define SD_CS 27
+// #define TFT_BL 4 // Pin for TFT backlight control
+
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 
 
 void setup()
 {
+  bme_init();
   initializeSDCard();
   tft.begin();
   tft.setRotation(1); // landscape
@@ -29,14 +38,14 @@ void loop()
   static unsigned long lastTemp = 0;
   static unsigned long lastHum = 0;
   static unsigned long lastPres = 0;
-  static float temperatura = 0, presiune = 0, umiditate = 0;
+  static float temperatura = 0, presiune = 0, umiditate = 0, altitude = 0;
 
   unsigned long now = millis();
 
   // Măsurare BME280 la fiecare 15 secunde
   if (now - lastBme >= 15000 || lastBme == 0) {
-    bme_masurare(temperatura, presiune, umiditate, a);
-    scriere_sd();
+    bme_measure(temperatura, presiune, umiditate, altitude);
+    scriere_sd(temperatura, presiune, umiditate);
     lastBme = now;
   }
 
