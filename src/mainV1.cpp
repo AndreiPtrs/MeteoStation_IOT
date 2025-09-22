@@ -33,7 +33,7 @@ int page = 0;
 
 // debounce variables
 unsigned long lastButtonPress = 0;
-const unsigned long debounceDelay = 200; // ms
+const unsigned long debounceDelay = 20; // ms
 
 bool backlightOn = true;
 unsigned long buttonPressStart = 0;
@@ -66,6 +66,7 @@ void loop()
     unsigned long now = millis();
     static bool buttonPrevState = LOW;
     static bool backlightToggled = false;
+  
 
     bool buttonState = digitalRead(BUTTON_PIN);
 
@@ -104,17 +105,18 @@ void loop()
         bme_measure(temperature, pressure, humidity, altitude);
         scriere_sd(temperature, pressure, humidity);
 
-        Serial.println("===================================");
-        Serial.println(" 🌍  BME280 Sensor Data");
-        Serial.println("===================================");
-        Serial.printf(" 🌡️  Temperature : %.2f °C\n", temperature);
-        Serial.printf(" 💧  Humidity    : %.2f %%\n", humidity);
-        Serial.printf(" ⬇️  Pressure    : %.2f hPa\n", pressure);
-        Serial.printf(" 🏔️  Altitude    : %.2f m\n", altitude);
-        Serial.println("===================================\n");
+        // Serial.println("===================================");
+        // Serial.println(" 🌍  BME280 Sensor Data");
+        // Serial.println("===================================");
+        // Serial.printf(" 🌡️  Temperature : %.2f °C\n", temperature);
+        // Serial.printf(" 💧  Humidity    : %.2f %%\n", humidity);
+        // Serial.printf(" ⬇️  Pressure    : %.2f hPa\n", pressure);
+        // Serial.printf(" 🏔️  Altitude    : %.2f m\n", altitude);
+        // Serial.println("===================================\n");
 
         showPage(page);
         citire_sd();
+        // buzz();
     }
 }
 

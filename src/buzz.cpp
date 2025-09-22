@@ -6,7 +6,7 @@
 #include <Adafruit_ILI9341.h>
 
 extern Adafruit_ILI9341 tft;
-const int buzzerPin = 32; // Pinul la care este conectat buzzer-ul
+const int buzzerPin = 14; // Pinul la care este conectat buzzer-ul
 
 void buzz(){
   // cresc frecvența de la 1000 Hz la 2000 Hz
