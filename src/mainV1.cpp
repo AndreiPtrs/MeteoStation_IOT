@@ -12,7 +12,7 @@
 // === TFT pins (adjust for your wiring) ===
 #define TFT_CS 5
 #define TFT_DC 27
-#define TFT_RST 14
+#define TFT_RST 25
 #define SD_CS 17
 #define TFT_BL 33 // Pin for TFT backlight control
 
@@ -102,7 +102,10 @@ void loop()
     Serial.printf(" 🏔️  Altitude    : %.2f m\n", altitude);
     Serial.println("===================================\n");
 
-    sendData(mqtt, "sensors/temperature", "temperature", temperature, "°C");
+    sendData(mqtt, "tenants/delta/mountain/esp32-Delta/temperature", "bme280", temperature, "°C");
+    sendData(mqtt, "tenants/delta/mountain/esp32-Delta/humidity", "bme280", humidity, "%");
+    sendData(mqtt, "tenants/delta/mountain/esp32-Delta/pressure", "bme280", pressure, "hPa ");
+    sendData(mqtt, "tenants/delta/mountain/esp32-Delta/altitude", "bme280", altitude, "m");
 
     // Actualizează pagina curentă cu datele noi
     showPage(page);
@@ -116,7 +119,7 @@ void loop()
     showPage(page); // afișează noua pagină imediat
     Serial.printf("Pagina schimbata: %d\n", page);
   }
-  // buzz();
+  buzz();
 }
 
 void showPage(int pag)

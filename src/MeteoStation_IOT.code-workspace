@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "MeteoStation_IOT",
+			"path": ".."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"*.bak": "cpp"
+		}
+	}
+}
