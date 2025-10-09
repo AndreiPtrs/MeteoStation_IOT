@@ -105,7 +105,7 @@ void loop()
     Serial.printf(" 🏔️  Altitude    : %.2f m\n", altitude);
     Serial.println("===================================\n");
 
-    showPage(page);
+    //showPage(page);
   }
   
 
