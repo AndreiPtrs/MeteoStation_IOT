@@ -53,6 +53,16 @@ void setup()
   pinMode (TFT_BL, OUTPUT);
   digitalWrite(TFT_BL, HIGH); 
 
+  SetupWIFI();// connect to WiFi
+  SetupTime();
+
+  Serial.println();
+  Serial.print(FormatTime());
+  Serial.println();
+
+  setupMQTT(); // setup MQTT
+  connectMQTT();
+
   Serial.println("\n=== ESP32 + BME280 Init ===");
   bme_init();
 
@@ -91,6 +101,8 @@ void loop()
     Serial.printf(" ⬇️  Pressure    : %.2f hPa\n", pressure);
     Serial.printf(" 🏔️  Altitude    : %.2f m\n", altitude);
     Serial.println("===================================\n");
+
+    sendData(mqtt, "sensors/temperature", "temperature", temperature, "°C");
 
     // Actualizează pagina curentă cu datele noi
     showPage(page);
