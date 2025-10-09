@@ -74,28 +74,28 @@ void setup()
 void loop()
 {
     unsigned long now = millis();
-    static bool buttonPrevState = LOW;
+    static bool buttonPrevState = HIGH; // inițial HIGH (neapăsat)
     static bool backlightToggled = false;
-  
 
     bool buttonState = digitalRead(BUTTON_PIN);
 
     // Detectare apăsare lungă pentru backlight ON/OFF
-    if (buttonState == HIGH && buttonPrevState == LOW) {
-        buttonPressStart = now; // început apăsare
+    if (buttonState == LOW && buttonPrevState == HIGH) { // apăsat (HIGH -> LOW)
+        buttonPressStart = now;
         backlightToggled = false;
+        // Serial.println("Buton apasat");
     }
 
-    if (buttonState == HIGH && !backlightToggled) {
+    if (buttonState == LOW && !backlightToggled) {
         if ((now - buttonPressStart) > 1500) { // 1.5 secunde pentru backlight
             toggleBacklight();
             backlightToggled = true;
-            // așteaptă eliberarea butonului pentru a evita schimbarea paginii accidental
+            // Serial.println("Backlight toggle");
         }
     }
 
     // Detectare apăsare scurtă pentru schimbare pagină
-    if (buttonState == LOW && buttonPrevState == HIGH) {
+    if (buttonState == HIGH && buttonPrevState == LOW) { // eliberat (LOW -> HIGH)
         if (!backlightToggled && (now - buttonPressStart) > debounceDelay && (now - buttonPressStart) < 1000) {
             // Apăsare scurtă: schimbă pagina
             page = (page + 1) % 4;
@@ -104,6 +104,7 @@ void loop()
         }
         buttonPressStart = 0;
         backlightToggled = false;
+        // Serial.println("Buton eliberat");
     }
 
     buttonPrevState = buttonState;
@@ -115,14 +116,14 @@ void loop()
         bme_measure(temperature, pressure, humidity, altitude);
         scriere_sd(temperature, pressure, humidity);
 
-        // Serial.println("===================================");
-        // Serial.println(" 🌍  BME280 Sensor Data");
-        // Serial.println("===================================");
-        // Serial.printf(" 🌡️  Temperature : %.2f °C\n", temperature);
-        // Serial.printf(" 💧  Humidity    : %.2f %%\n", humidity);
-        // Serial.printf(" ⬇️  Pressure    : %.2f hPa\n", pressure);
-        // Serial.printf(" 🏔️  Altitude    : %.2f m\n", altitude);
-        // Serial.println("===================================\n");
+        Serial.println("===================================");
+        Serial.println(" 🌍  BME280 Sensor Data");
+        Serial.println("===================================");
+        Serial.printf(" 🌡️  Temperature : %.2f °C\n", temperature);
+        Serial.printf(" 💧  Humidity    : %.2f %%\n", humidity);
+        Serial.printf(" ⬇️  Pressure    : %.2f hPa\n", pressure);
+        Serial.printf(" 🏔️  Altitude    : %.2f m\n", altitude);
+        Serial.println("===================================\n");
 
         showPage(page);
         citire_sd();
