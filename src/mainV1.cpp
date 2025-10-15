@@ -51,7 +51,7 @@ void setup()
   initializeSDCard();
   Serial.begin(115200);
   delay(1000);
-  pinMode(BUTTON_PIN, INPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode (TFT_BL, OUTPUT);
   digitalWrite(TFT_BL, HIGH); 
 
@@ -77,7 +77,23 @@ void loop()
     static bool buttonPrevState = HIGH; // inițial HIGH (neapăsat)
     static bool backlightToggled = false;
 
+<<<<<<< HEAD
     bool buttonState = digitalRead(BUTTON_PIN);
+=======
+  // === detectare apăsare lungă pentru backlight ON/OFF ===
+  if (digitalRead(BUTTON_PIN) == LOW) {
+      if (buttonPressStart == 0) buttonPressStart = now;
+      if ((now - buttonPressStart) > 3000) { // 3 secunde
+          toggleBacklight();
+          while (digitalRead(BUTTON_PIN) == LOW) delay(10); // așteaptă eliberarea butonului
+          buttonPressStart = 0;
+          lastButtonPress = now;
+          return; // evită schimbarea paginii accidental
+      }
+  } else {
+      buttonPressStart = 0;
+  }
+>>>>>>> main
 
     // Detectare apăsare lungă pentru backlight ON/OFF
     if (buttonState == LOW && buttonPrevState == HIGH) { // apăsat (HIGH -> LOW)
@@ -109,6 +125,7 @@ void loop()
 
     buttonPrevState = buttonState;
 
+<<<<<<< HEAD
     // === read sensor data on interval ===
     if (now - lastSensorRead >= sensorInterval)
     {
@@ -129,6 +146,17 @@ void loop()
         citire_sd();
         // buzz();
     }
+=======
+  // === schimbă pagina la apăsarea butonului ===
+  if (digitalRead(BUTTON_PIN) == LOW && (now - lastButtonPress > debounceDelay) && buttonPressStart == 0)
+  {
+    lastButtonPress = now;
+    page = (page + 1) % 4;
+    showPage(page); // afișează noua pagină imediat
+    Serial.printf("Pagina schimbata: %d\n", page);
+  }
+  //buzz();
+>>>>>>> main
 }
 
 void showPage(int pag)
