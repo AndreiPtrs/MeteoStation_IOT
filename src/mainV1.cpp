@@ -96,7 +96,6 @@ void loop()
         buttonPressed = true;
         buttonPressStart = now;
         longPressHandled = false;
-        Serial.println("Buton apasat");
       }
       
       // Detectare eliberare buton
@@ -113,7 +112,6 @@ void loop()
         
         buttonPressStart = 0;
         longPressHandled = false;
-        Serial.println("Buton eliberat");
       }
     }
   }
