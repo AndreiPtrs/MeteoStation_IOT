@@ -7,10 +7,10 @@ void display_setup()
     tft.setRotation(1); // Landscape mode
     tft.fillScreen(ILI9341_BLACK);
 
-    tft.setTextSize(4);
-    tft.setTextColor(ILI9341_WHITE);
-    tft.setCursor(10, 120);
-    tft.println("BME280 Ready...");
+    // tft.setTextSize(4);
+    // tft.setTextColor(ILI9341_WHITE);
+    // tft.setCursor(10, 120);
+    // tft.println("BME280 Ready...");
 }
 
 void showTemperature(float temperature)
@@ -134,4 +134,23 @@ void showAltitude(float altitude)
   tft.setTextSize(4);
   tft.setTextColor(ILI9341_BLACK);
   tft.printf("%.fm", altitude);
+}
+
+void showMinMaxTemperature(float minTemp, float maxTemp)
+{
+    tft.fillScreen(ILI9341_WHITE);
+    tft.setCursor(20, 20);
+    tft.setTextSize(3);
+    tft.setTextColor(ILI9341_BLACK);
+    tft.println("Min/Max Temp");
+
+    tft.setCursor(40, 100);
+    tft.setTextSize(4);
+    tft.setTextColor(ILI9341_BLUE);
+    tft.printf("Min: %.2f C", minTemp);
+
+    tft.setCursor(40, 180);
+    tft.setTextSize(4);
+    tft.setTextColor(ILI9341_RED);
+    tft.printf("Max: %.2f C", maxTemp);
 }

@@ -19,3 +19,4 @@ void showTemperature(float temperature);
 void showHumidity(float humidity);
 void showPressure(float pressure);
 void showAltitude(float altitude);
+void showMinMaxTemperature(float minTemp, float maxTemp);

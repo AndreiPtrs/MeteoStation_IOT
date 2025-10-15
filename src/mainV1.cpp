@@ -13,7 +13,6 @@
 #define TFT_CS 5
 #define TFT_DC 27
 #define TFT_RST 25
-#define TFT_CLK 18
 #define SD_CS 17
 #define TFT_BL 33 // Pin for TFT backlight control
 
@@ -23,7 +22,7 @@ Adafruit_BME280 bme; // BME280 sensor
 // === Button pin ===
 #define BUTTON_PIN 13
 
-// === timing variables (easy to change) ===
+// === timing variables ===
 unsigned long sensorInterval = 5000; // sensor read every 5 seconds
 unsigned long lastSensorRead = 0;
 
@@ -48,12 +47,13 @@ void toggleBacklight() {
 
 void setup()
 {
-  initializeSDCard();
   Serial.begin(115200);
   delay(1000);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode (TFT_BL, OUTPUT);
   digitalWrite(TFT_BL, HIGH); 
+
+  display_setup();
 
   SetupWIFI();// connect to WiFi
   SetupTime();
@@ -68,113 +68,112 @@ void setup()
   Serial.println("\n=== ESP32 + BME280 Init ===");
   bme_init();
 
-  display_setup();
+  
 }
 
 void loop()
 {
-    unsigned long now = millis();
-    static bool buttonPrevState = HIGH; // inițial HIGH (neapăsat)
-    static bool backlightToggled = false;
+  unsigned long now = millis();
+  static bool buttonState = HIGH;
+  static bool lastButtonState = HIGH;
+  static bool buttonPressed = false;
+  static unsigned long pressStartTime = 0;
+  static bool longPressHandled = false;
 
-<<<<<<< HEAD
-    bool buttonState = digitalRead(BUTTON_PIN);
-=======
-  // === detectare apăsare lungă pentru backlight ON/OFF ===
-  if (digitalRead(BUTTON_PIN) == LOW) {
-      if (buttonPressStart == 0) buttonPressStart = now;
-      if ((now - buttonPressStart) > 3000) { // 3 secunde
-          toggleBacklight();
-          while (digitalRead(BUTTON_PIN) == LOW) delay(10); // așteaptă eliberarea butonului
-          buttonPressStart = 0;
-          lastButtonPress = now;
-          return; // evită schimbarea paginii accidental
-      }
-  } else {
-      buttonPressStart = 0;
+  // Citire stare buton cu debounce
+  bool reading = digitalRead(BUTTON_PIN);
+  
+  if (reading != lastButtonState) {
+    pressStartTime = now; // resetează timpul la orice schimbare
   }
->>>>>>> main
-
-    // Detectare apăsare lungă pentru backlight ON/OFF
-    if (buttonState == LOW && buttonPrevState == HIGH) { // apăsat (HIGH -> LOW)
+  
+  if ((now - pressStartTime) > debounceDelay) {
+    if (reading != buttonState) {
+      buttonState = reading;
+      
+      // Detectare început apăsare
+      if (buttonState == LOW && !buttonPressed) {
+        buttonPressed = true;
         buttonPressStart = now;
-        backlightToggled = false;
-        // Serial.println("Buton apasat");
-    }
-
-    if (buttonState == LOW && !backlightToggled) {
-        if ((now - buttonPressStart) > 1500) { // 1.5 secunde pentru backlight
-            toggleBacklight();
-            backlightToggled = true;
-            // Serial.println("Backlight toggle");
+        longPressHandled = false;
+        Serial.println("Buton apasat");
+      }
+      
+      // Detectare eliberare buton
+      if (buttonState == HIGH && buttonPressed) {
+        buttonPressed = false;
+        unsigned long pressDuration = now - buttonPressStart;
+        
+        if (!longPressHandled && pressDuration < 2000) {
+          // Apăsare scurtă - schimbă pagina
+          page = (page + 1) % 5;
+          showPage(page);
+          Serial.printf("Pagina schimbata: %d (durata: %lu ms)\n", page, pressDuration);
         }
-    }
-
-    // Detectare apăsare scurtă pentru schimbare pagină
-    if (buttonState == HIGH && buttonPrevState == LOW) { // eliberat (LOW -> HIGH)
-        if (!backlightToggled && (now - buttonPressStart) > debounceDelay && (now - buttonPressStart) < 1000) {
-            // Apăsare scurtă: schimbă pagina
-            page = (page + 1) % 4;
-            showPage(page);
-            Serial.printf("Pagina schimbata: %d\n", page);
-        }
+        
         buttonPressStart = 0;
-        backlightToggled = false;
-        // Serial.println("Buton eliberat");
+        longPressHandled = false;
+        Serial.println("Buton eliberat");
+      }
     }
-
-    buttonPrevState = buttonState;
-
-<<<<<<< HEAD
-    // === read sensor data on interval ===
-    if (now - lastSensorRead >= sensorInterval)
-    {
-        lastSensorRead = now;
-        bme_measure(temperature, pressure, humidity, altitude);
-        scriere_sd(temperature, pressure, humidity);
-
-        Serial.println("===================================");
-        Serial.println(" 🌍  BME280 Sensor Data");
-        Serial.println("===================================");
-        Serial.printf(" 🌡️  Temperature : %.2f °C\n", temperature);
-        Serial.printf(" 💧  Humidity    : %.2f %%\n", humidity);
-        Serial.printf(" ⬇️  Pressure    : %.2f hPa\n", pressure);
-        Serial.printf(" 🏔️  Altitude    : %.2f m\n", altitude);
-        Serial.println("===================================\n");
-
-        showPage(page);
-        citire_sd();
-        // buzz();
-    }
-=======
-  // === schimbă pagina la apăsarea butonului ===
-  if (digitalRead(BUTTON_PIN) == LOW && (now - lastButtonPress > debounceDelay) && buttonPressStart == 0)
-  {
-    lastButtonPress = now;
-    page = (page + 1) % 4;
-    showPage(page); // afișează noua pagină imediat
-    Serial.printf("Pagina schimbata: %d\n", page);
   }
-  //buzz();
->>>>>>> main
+  
+  // Verificare apăsare lungă în timpul apăsării
+  if (buttonPressed && !longPressHandled && (now - buttonPressStart) > 2000) {
+    toggleBacklight();
+    longPressHandled = true;
+    Serial.println("Apasare lunga - toggle backlight");
+  }
+  
+  lastButtonState = reading;
+
+  // === read sensor data on interval ===
+  if (now - lastSensorRead >= sensorInterval)
+  {
+    lastSensorRead = now;
+    bme_measure(temperature, pressure, humidity, altitude);
+
+    Serial.println("===================================");
+    Serial.println(" 🌍  BME280 Sensor Data");
+    Serial.println("===================================");
+    Serial.printf(" 🌡️  Temperature : %.2f °C\n", temperature);
+    Serial.printf(" 💧  Humidity    : %.2f %%\n", humidity);
+    Serial.printf(" ⬇️  Pressure    : %.2f hPa\n", pressure);
+    Serial.printf(" 🏔️  Altitude    : %.2f m\n", altitude);
+    Serial.println("===================================\n");
+
+    sendData(mqtt, "tenants/delta/mountain/esp32-Delta/temperature", "bme280", temperature, "°C");
+    sendData(mqtt, "tenants/delta/mountain/esp32-Delta/humidity", "bme280", humidity, "%");
+    sendData(mqtt, "tenants/delta/mountain/esp32-Delta/pressure", "bme280", pressure, "hPa ");
+    sendData(mqtt, "tenants/delta/mountain/esp32-Delta/altitude", "bme280", altitude, "m");
+
+    // Actualizează pagina curentă cu datele noi
+    showPage(page);
+  }
 }
 
 void showPage(int pag)
 {
+  float minTemperature = 25;
+  float maxTemperature = 20;
+  ;
   switch (pag)
   {
   case 0: // 🌡️ Temperature
     showTemperature(temperature);
     break;
 
-  case 1: // 💧 Humidity
+  // case 1: // 🌡️ Min/Max Temperature
+  //   showMinMaxTemperature(minTemperature , maxTemperature);
+  //   break;
+  case 2: // 💧 Humidity
     showHumidity(humidity);
     break;
 
-  case 2: // ⬇️ Pressure
+  case 3: // ⬇️ Pressure
     showPressure(pressure);
     break;
-  case 3: // 🏔️ Altitude
+  case 4: // 🏔️ Altitude
     showAltitude(altitude);
     break;
   }
