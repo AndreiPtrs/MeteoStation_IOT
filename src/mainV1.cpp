@@ -47,7 +47,9 @@ void toggleBacklight() {
 
 void setup()
 {
+  shortBuzz();
   Serial.begin(115200);
+  
   delay(1000);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode (TFT_BL, OUTPUT);

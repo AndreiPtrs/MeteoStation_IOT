@@ -3,6 +3,7 @@
 #include "Connect.h"
 #include "Private.h"
 #include "display.h"
+#include "buzz.h"
 
 bool wifiConnected = false; // Flag global pentru starea WiFi
 
@@ -38,7 +39,7 @@ void SetupWIFI()
         tft.setTextSize(4);
         tft.setTextColor(ILI9341_GREEN);
         tft.printf("Connected to WiFi, %s", ssid);
-        
+        connectedbuzz();
         Serial.printf("Connected to the WiFi, %s", ssid);
         Serial.print("IP Address: ");
         Serial.println(WiFi.localIP());
@@ -54,7 +55,7 @@ void SetupWIFI()
         tft.setTextSize(4);
         tft.setTextColor(ILI9341_RED);
         tft.println("WiFi timeout\noffline mode");
-        
+        unconnectedbuzz();
         delay(1000); // Afișează mesajul pentru 1 secundă
     }
 }

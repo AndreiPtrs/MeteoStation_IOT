@@ -1,4 +1,3 @@
-
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
@@ -21,3 +20,35 @@ void buzz(){
     delay(20);
   }
 };
+void shortBuzz(){
+  tone(buzzerPin, 2000); // Emite un ton de 2000 Hz
+  delay(100);            // Durata tonului
+  noTone(buzzerPin);     // Oprește tonul
+}
+
+void doubleBuzz(){
+  for(int i = 0; i < 2; i++){
+    tone(buzzerPin, 2000); // Emite un ton de 2000 Hz
+    delay(100);            // Durata tonului
+    noTone(buzzerPin);     // Oprește tonul
+    delay(100);            // Pauză între tonuri
+  }
+}
+
+void connectedbuzz(){
+  for(int i = 0; i < 3; i++){
+    tone(buzzerPin, 1000 + i * 500); // Emite un ton de frecvență crescătoare
+    delay(100);                      // Durata tonului
+    noTone(buzzerPin);               // Oprește tonul
+    delay(50);                       // Pauză între tonuri
+  }
+}
+
+void unconnectedbuzz(){
+  // Sunet scurt descrescător de la frecvență mică (ton de eroare simplu)
+  for(int freq = 500; freq >= 200; freq -= 30){
+    tone(buzzerPin, freq);
+    delay(30);
+  }
+  noTone(buzzerPin);
+}

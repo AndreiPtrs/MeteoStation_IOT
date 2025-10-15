@@ -9,3 +9,7 @@
 extern Adafruit_ILI9341 tft;
 
 void buzz();
+void shortBuzz();
+void doubleBuzz();
+void connectedbuzz();
+void unconnectedbuzz();
