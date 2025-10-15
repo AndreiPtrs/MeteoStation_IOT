@@ -49,7 +49,7 @@ void setup()
 {
   Serial.begin(115200);
   delay(1000);
-  pinMode(BUTTON_PIN, INPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode (TFT_BL, OUTPUT);
   digitalWrite(TFT_BL, HIGH); 
 
@@ -74,11 +74,11 @@ void loop()
   unsigned long now = millis();
 
   // === detectare apăsare lungă pentru backlight ON/OFF ===
-  if (digitalRead(BUTTON_PIN) == HIGH) {
+  if (digitalRead(BUTTON_PIN) == LOW) {
       if (buttonPressStart == 0) buttonPressStart = now;
       if ((now - buttonPressStart) > 3000) { // 3 secunde
           toggleBacklight();
-          while (digitalRead(BUTTON_PIN) == HIGH) delay(10); // așteaptă eliberarea butonului
+          while (digitalRead(BUTTON_PIN) == LOW) delay(10); // așteaptă eliberarea butonului
           buttonPressStart = 0;
           lastButtonPress = now;
           return; // evită schimbarea paginii accidental
@@ -112,14 +112,14 @@ void loop()
   }
 
   // === schimbă pagina la apăsarea butonului ===
-  if (digitalRead(BUTTON_PIN) == HIGH && (now - lastButtonPress > debounceDelay) && buttonPressStart == 0)
+  if (digitalRead(BUTTON_PIN) == LOW && (now - lastButtonPress > debounceDelay) && buttonPressStart == 0)
   {
     lastButtonPress = now;
     page = (page + 1) % 4;
     showPage(page); // afișează noua pagină imediat
     Serial.printf("Pagina schimbata: %d\n", page);
   }
-  buzz();
+  //buzz();
 }
 
 void showPage(int pag)
