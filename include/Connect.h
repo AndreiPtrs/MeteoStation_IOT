@@ -4,10 +4,12 @@
 #include <time.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
+#include "Private.h"
 
 extern PubSubClient mqtt;
 
 void SetupWIFI();
+void ConnectToAvailableWiFi();
 void SetupTime();
 String FormatTime();
 

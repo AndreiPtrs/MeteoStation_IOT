@@ -1,66 +1,232 @@
-#include "sdcard.h"
-#include"buzz.h"
-#include"bme280.h"
-#include "Altitude.h"
-#include "Pressure.h"
-#include "temperature.h"
-#include"Humidity.h"
+#include <Arduino.h>
 
-#define TFT_CS 5
-#define TFT_DC 27
-#define TFT_RST 14
-#define SD_CS 17
-#define ILI9341_LIGHTBLUE 0x3B1F
-#define ILI9341_BROWN 0x7800
+// Pinii pentru banda LED RGB
+#define LED_RED 26  // în loc de 32
+#define LED_GREEN 33
+#define LED_BLUE 25  // Schimbat de la 35 la 25 (pin output valid)
 
-Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
+// Canale PWM pentru fiecare culoare
+#define RED_CHANNEL 0
+#define GREEN_CHANNEL 1
+#define BLUE_CHANNEL 2
 
+// Forward declarations
+void testIndividualColors();
+void rainbowCycle();
+void breathingEffect();
+void colorWave();
+void flashingColors();
+void fadeInOut();
+void setRGBColor(int red, int green, int blue);
+void wheelColor(int pos, int *r, int *g, int *b);
 
-void setup()
-{
-  initializeSDCard();
-  tft.begin();
-  tft.setRotation(1); // landscape
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
   
+  Serial.println("=== LED RGB DEBUG ===");
+  
+  // Test direct cu digitalWrite pentru a verifica hardware-ul
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
+  pinMode(LED_BLUE, OUTPUT);
+  
+  Serial.println("Testing with digitalWrite...");
+  digitalWrite(LED_RED, HIGH);
+  Serial.println("RED should be ON");
+  delay(2000);
+  digitalWrite(LED_RED, LOW);
+  
+  digitalWrite(LED_GREEN, HIGH);
+  Serial.println("GREEN should be ON");
+  delay(2000);
+  digitalWrite(LED_GREEN, LOW);
+  
+  digitalWrite(LED_BLUE, HIGH);
+  Serial.println("BLUE should be ON");
+  delay(2000);
+  digitalWrite(LED_BLUE, LOW);
+  
+  // Acum configurează PWM
+  Serial.println("Setting up PWM...");
+  ledcSetup(RED_CHANNEL, 5000, 8);   
+  ledcSetup(GREEN_CHANNEL, 5000, 8); 
+  ledcSetup(BLUE_CHANNEL, 5000, 8);  
+  
+  ledcAttachPin(LED_RED, RED_CHANNEL);
+  ledcAttachPin(LED_GREEN, GREEN_CHANNEL);
+  ledcAttachPin(LED_BLUE, BLUE_CHANNEL);
+  
+  Serial.println("PWM setup complete. Testing individual colors...");
+  testIndividualColors();
 }
 
-void loop()
-{
-  static unsigned long lastBme = 0;
-  static unsigned long lastTemp = 0;
-  static unsigned long lastHum = 0;
-  static unsigned long lastPres = 0;
-  static float temperatura = 0, presiune = 0, umiditate = 0;
+void testIndividualColors() {
+  Serial.println("Testing RED with PWM...");
+  ledcWrite(RED_CHANNEL, 255);
+  ledcWrite(GREEN_CHANNEL, 0);
+  ledcWrite(BLUE_CHANNEL, 0);
+  delay(3000);
+  
+  Serial.println("Testing GREEN with PWM...");
+  ledcWrite(RED_CHANNEL, 0);
+  ledcWrite(GREEN_CHANNEL, 255);
+  ledcWrite(BLUE_CHANNEL, 0);
+  delay(3000);
+  
+  Serial.println("Testing BLUE with PWM...");
+  ledcWrite(RED_CHANNEL, 0);
+  ledcWrite(GREEN_CHANNEL, 0);
+  ledcWrite(BLUE_CHANNEL, 255);
+  delay(3000);
+  
+  Serial.println("All OFF");
+  setRGBColor(0, 0, 0);
+  delay(1000);
+}
 
-  unsigned long now = millis();
-
-  // Măsurare BME280 la fiecare 15 secunde
-  if (now - lastBme >= 15000 || lastBme == 0) {
-    bme_masurare(temperatura, presiune, umiditate);
-    scriere_sd();
-    lastBme = now;
+void loop() {
+  // Test continuu pentru roșu
+  Serial.println("Testing RED continuously...");
+  for(int i = 0; i <= 255; i += 5) {
+    ledcWrite(RED_CHANNEL, i);
+    Serial.printf("RED PWM: %d\n", i);
+    delay(100);
   }
+  
+  delay(2000);
+  setRGBColor(0, 0, 0);
+  delay(1000);
+}
 
-  // Temperature la fiecare 2 secunde 
-  if (now - lastTemp >= 2000 || lastTemp == 0) {
-    Temperature(temperatura);
-    lastTemp = now;
+// Funcție pentru setarea culorii RGB
+void setRGBColor(int red, int green, int blue) {
+  ledcWrite(RED_CHANNEL, red);
+  ledcWrite(GREEN_CHANNEL, green);
+  ledcWrite(BLUE_CHANNEL, blue);
+}
+
+// Efect curcubeu rotativ
+void rainbowCycle() {
+  for(int j = 0; j < 256; j++) {
+    int r, g, b;
+    wheelColor(j, &r, &g, &b);
+    setRGBColor(r, g, b);
+    delay(20);
   }
+}
 
-  // Humidity la fiecare 4 secunde (2 secunde după Temperature)
-  if (now - lastHum >= 4000 || lastHum == 0) {
-    Humidity(umiditate);
-    lastHum = now;
+// Efect de respirație cu culori diferite
+void breathingEffect() {
+  int colors[6][3] = {{255,0,0}, {0,255,0}, {0,0,255}, {255,255,0}, {255,0,255}, {0,255,255}};
+  
+  for(int color = 0; color < 6; color++) {
+    // Fade in
+    for(int brightness = 0; brightness <= 255; brightness += 5) {
+      int r = (colors[color][0] * brightness) / 255;
+      int g = (colors[color][1] * brightness) / 255;
+      int b = (colors[color][2] * brightness) / 255;
+      setRGBColor(r, g, b);
+      delay(30);
+    }
+    
+    // Fade out
+    for(int brightness = 255; brightness >= 0; brightness -= 5) {
+      int r = (colors[color][0] * brightness) / 255;
+      int g = (colors[color][1] * brightness) / 255;
+      int b = (colors[color][2] * brightness) / 255;
+      setRGBColor(r, g, b);
+      delay(30);
+    }
   }
+}
 
-  // Pressure la fiecare 6 secunde (2 secunde după Humidity)
-  if (now - lastPres >= 6000 || lastPres == 0) {
-    Pressure(presiune);
-    lastPres = now;
+// Undă de culori
+void colorWave() {
+  for(int i = 0; i < 3; i++) {
+    // Roșu -> Verde
+    for(int val = 0; val <= 255; val += 3) {
+      setRGBColor(255-val, val, 0);
+      delay(10);
+    }
+    
+    // Verde -> Albastru
+    for(int val = 0; val <= 255; val += 3) {
+      setRGBColor(0, 255-val, val);
+      delay(10);
+    }
+    
+    // Albastru -> Roșu
+    for(int val = 0; val <= 255; val += 3) {
+      setRGBColor(val, 0, 255-val);
+      delay(10);
+    }
   }
+}
 
-  // Citire SD la fiecare 15 secunde (după măsurare)
-  if (now - lastBme < 50) { // imediat după măsurare
-    citire_sd();
+// Culori care clipesc rapid
+void flashingColors() {
+  int flashColors[8][3] = {
+    {255,0,0}, {0,255,0}, {0,0,255}, {255,255,0}, 
+    {255,0,255}, {0,255,255}, {255,255,255}, {255,128,0}
+  };
+  
+  for(int cycle = 0; cycle < 3; cycle++) {
+    for(int i = 0; i < 8; i++) {
+      setRGBColor(flashColors[i][0], flashColors[i][1], flashColors[i][2]);
+      delay(200);
+      setRGBColor(0, 0, 0); // Stinge
+      delay(100);
+    }
+  }
+}
+
+// Fade in/out prin toate culorile
+void fadeInOut() {
+  int colors[7][3] = {
+    {255,0,0}, {255,128,0}, {255,255,0}, {0,255,0}, 
+    {0,255,255}, {0,0,255}, {255,0,255}
+  };
+  
+  for(int color = 0; color < 7; color++) {
+    // Fade in
+    for(int brightness = 0; brightness <= 255; brightness += 5) {
+      int r = (colors[color][0] * brightness) / 255;
+      int g = (colors[color][1] * brightness) / 255;
+      int b = (colors[color][2] * brightness) / 255;
+      setRGBColor(r, g, b);
+      delay(15);
+    }
+    
+    delay(300); // Păstrează culoarea
+    
+    // Fade out
+    for(int brightness = 255; brightness >= 0; brightness -= 5) {
+      int r = (colors[color][0] * brightness) / 255;
+      int g = (colors[color][1] * brightness) / 255;
+      int b = (colors[color][2] * brightness) / 255;
+      setRGBColor(r, g, b);
+      delay(15);
+    }
+  }
+}
+
+// Generează culori pentru efectul curcubeu
+void wheelColor(int pos, int *r, int *g, int *b) {
+  pos = pos % 256;
+  if(pos < 85) {
+    *r = pos * 3;
+    *g = 255 - pos * 3;
+    *b = 0;
+  } else if(pos < 170) {
+    pos -= 85;
+    *r = 255 - pos * 3;
+    *g = 0;
+    *b = pos * 3;
+  } else {
+    pos -= 170;
+    *r = 0;
+    *g = pos * 3;
+    *b = 255 - pos * 3;
   }
 }

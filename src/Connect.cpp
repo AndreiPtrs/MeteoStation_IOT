@@ -1,4 +1,5 @@
 #include <string>
+#include <cstring>
 
 #include "Connect.h"
 #include "Private.h"
@@ -6,58 +7,103 @@
 #include "buzz.h"
 
 bool wifiConnected = false; // Flag global pentru starea WiFi
+String connectedSSID = ""; // Stochează SSID-ul rețelei conectate
 
-void SetupWIFI()
+// Funcție pentru a se conecta la prima rețea WiFi disponibilă din vector
+void ConnectToAvailableWiFi()
 {
     WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
+    WiFi.disconnect(true); // Deconectează și dezactivează AP
+    delay(100);
 
-    Serial.print("Connecting to WiFi ..");
-    tft.setTextSize(4);
+    Serial.println("\n[WiFi] Scanning for available networks...");
+    tft.setTextSize(3);
     tft.fillScreen(ILI9341_BLACK);
     tft.setTextColor(ILI9341_WHITE);
-    tft.setCursor(2, 20);
-    tft.printf("Connecting to WiFi, %s", ssid);
-    
-    unsigned long startTime = millis();
-    const unsigned long timeout = 15000; // 15 secunde timeout
+    tft.setCursor(10, 20);
+    tft.println("Scanning WiFi...");
 
-    while (WiFi.status() != WL_CONNECTED && (millis() - startTime) < timeout)
-    {
-        delay(500);
-        Serial.print('.');
-        tft.print('.'); // Afișează puncte pe ecran pentru a indica încercarea de conectare
+    // Scan pentru rețelele disponibile
+    int numNetworks = WiFi.scanNetworks();
+    Serial.printf("[WiFi] Found %d networks\n", numNetworks);
+
+    if (numNetworks == 0) {
+        Serial.println("[WiFi] No networks found!");
+        tft.fillScreen(ILI9341_BLACK);
+        tft.setCursor(10, 20);
+        tft.setTextColor(ILI9341_RED);
+        tft.println("No WiFi found");
+        return;
     }
 
-    Serial.println();
-    
-    if (WiFi.status() == WL_CONNECTED) {
-        wifiConnected = true;
+    // Cauta și conectează la prima rețea disponibilă din vector
+    bool foundNetwork = false;
+    for (int i = 0; i < wifiNetworksCount; i++) {
+        for (int j = 0; j < numNetworks; j++) {
+            if (strcmp(WiFi.SSID(j).c_str(), wifiNetworks[i].ssid) == 0) {
+                Serial.printf("[WiFi] Found network: %s\n", wifiNetworks[i].ssid);
+                tft.fillScreen(ILI9341_BLACK);
+                tft.setCursor(10, 20);
+                tft.setTextColor(ILI9341_WHITE);
+                tft.printf("Connecting to:\n%s", wifiNetworks[i].ssid);
 
-        tft.fillScreen(ILI9341_BLACK);
-        tft.setCursor(20, 20);
-        tft.setTextSize(4);
-        tft.setTextColor(ILI9341_GREEN);
-        tft.printf("Connected to WiFi, %s", ssid);
-        connectedbuzz();
-        Serial.printf("Connected to the WiFi, %s", ssid);
-        Serial.print("IP Address: ");
-        Serial.println(WiFi.localIP());
-        
-        
-    } else {
+                // Se conectează la rețea
+                WiFi.begin(wifiNetworks[i].ssid, wifiNetworks[i].password);
+                connectedSSID = wifiNetworks[i].ssid;
+
+                unsigned long startTime = millis();
+                const unsigned long timeout = 15000; // 15 secunde timeout
+
+                while (WiFi.status() != WL_CONNECTED && (millis() - startTime) < timeout) {
+                    delay(500);
+                    Serial.print('.');
+                    tft.print('.');
+                }
+
+                Serial.println();
+
+                if (WiFi.status() == WL_CONNECTED) {
+                    wifiConnected = true;
+                    foundNetwork = true;
+
+                    tft.fillScreen(ILI9341_BLACK);
+                    tft.setCursor(20, 20);
+                    tft.setTextSize(3);
+                    tft.setTextColor(ILI9341_GREEN);
+                    tft.printf("Connected to\n%s", wifiNetworks[i].ssid);
+                    connectedbuzz();
+                    Serial.printf("[WiFi] Connected to: %s\n", wifiNetworks[i].ssid);
+                    Serial.print("[WiFi] IP Address: ");
+                    Serial.println(WiFi.localIP());
+                    delay(2000);
+                    break; // Ieși din bucla de rețele disponibile
+                } else {
+                    Serial.printf("[WiFi] Failed to connect to %s\n", wifiNetworks[i].ssid);
+                    WiFi.disconnect(true);
+                    delay(500);
+                }
+            }
+        }
+        if (foundNetwork) break; // Ieși din bucla vector dacă s-a conectat
+    }
+
+    if (!foundNetwork) {
         wifiConnected = false;
-        Serial.println("WiFi connection timeout after 15 seconds");
-        Serial.println("Continuing without WiFi...");
-        
+        Serial.println("[WiFi] None of the configured networks were available");
         tft.fillScreen(ILI9341_BLACK);
         tft.setCursor(10, 10);
-        tft.setTextSize(4);
+        tft.setTextSize(3);
         tft.setTextColor(ILI9341_RED);
-        tft.println("WiFi timeout\noffline mode");
+        tft.println("WiFi offline\nmode");
         unconnectedbuzz();
-        delay(1000); // Afișează mesajul pentru 1 secundă
+        delay(2000);
     }
+}
+
+// Funcție pentru compatibilitate cu codul existent (apelează noua funcție)
+void SetupWIFI()
+{
+    ConnectToAvailableWiFi();
 }
 
 const int gmtOffset_sec = 7200;
