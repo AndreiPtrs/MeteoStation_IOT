@@ -67,6 +67,8 @@ void setup()
   setupMQTT(); // setup MQTT
   connectMQTT();
 
+  initializeSDCard();
+
   Serial.println("\n=== ESP32 + BME280 Init ===");
   bme_init();
 
@@ -132,6 +134,7 @@ void loop()
   {
     lastSensorRead = now;
     bme_measure(temperature, pressure, humidity, altitude);
+    scriere_sd(temperature, pressure, humidity);
 
     Serial.println("===================================");
     Serial.println(" 🌍  BME280 Sensor Data");

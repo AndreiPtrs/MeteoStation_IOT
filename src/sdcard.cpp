@@ -12,6 +12,7 @@ extern Adafruit_ILI9341 tft;
 #define SD_CS 17 // Change this to your SD card CS pin
 
 extern Adafruit_BME280 bme; // Global BME280 sensor object
+static bool sdCardReady = false;
 
 void initializeSDCard()
 {
@@ -21,9 +22,10 @@ void initializeSDCard()
     if (!SD.begin(SD_CS, SPI))
     {
         Serial.println("Eroare la accesarea cardului SD!");
-        while (1)
-            ;
+        sdCardReady = false;
+        return;
     }
+    sdCardReady = true;
     Serial.println("Card SD detectat.");
     File dataFile = SD.open("/bme280_log.csv", FILE_APPEND);
     if (dataFile && dataFile.size() == 0)
@@ -41,6 +43,10 @@ void initializeSDCard()
 
 void scriere_sd(float &temperature, float &pressure, float &humidity)
 {
+    if (!sdCardReady) {
+        Serial.println("Card SD indisponibil - sar peste scriere");
+        return;
+    }
 
 
   Serial.print("T=");
@@ -69,6 +75,11 @@ void scriere_sd(float &temperature, float &pressure, float &humidity)
 
 void citire_sd()
 {
+    if (!sdCardReady) {
+        Serial.println("Card SD indisponibil - sar peste citire");
+        return;
+    }
+
     File dataFile = SD.open("/bme280_log.csv", FILE_READ);
     if (!dataFile) {
         Serial.println("Nu pot citi de pe card!");

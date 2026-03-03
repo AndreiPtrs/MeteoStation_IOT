@@ -181,7 +181,7 @@ void sendData(PubSubClient &mqttClient, const char* topic, const char* sensor, f
         return;
     }
     
-    StaticJsonDocument<200> doc;
+    JsonDocument doc;
     doc["ts"] = FormatTime();
     doc["value"] = value;
     doc["unit"] = unit;

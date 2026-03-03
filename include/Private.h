@@ -10,7 +10,6 @@ struct WiFiNetwork {
 const WiFiNetwork wifiNetworks[] = {
     {"525", "NuSeSpune"},                    // Red 1
     {"Vodafone_WiFi_Students", "Future8T@len!s"}, // Red 2 (alternativă)
-    // Adauga mai multe rețele după necesitate:
     {"Galaxy", "12345678"},
 };
 
